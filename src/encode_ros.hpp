@@ -13,6 +13,8 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/Imu.h>
 #include <amrl_msgs/ElevatorCommand.h>
 #include <std_msgs/Header.h>
 #include <std_msgs/String.h>
@@ -351,6 +353,56 @@ flatbuffers::uoffset_t encode(
              covariance,
              msg.position_covariance_type)
       .o;
+}
+
+// sensor_msgs/BatteryState
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const sensor_msgs::BatteryState& msg,
+    const MetadataOffset& metadata) {
+  auto header = encode(fbb, msg.header, 0);
+
+
+  auto cell_voltage = fbb.CreateVector(
+      msg.cell_voltage.data(), msg.cell_voltage.size());
+
+  auto cell_temperature = fbb.CreateVector(
+      msg.cell_temperature.data(), msg.cell_temperature.size());
+
+  return fb::sensor_msgs::CreateBatteryState(
+             fbb,
+             metadata,
+             header,
+             msg.voltage,
+             msg.current,
+             msg.charge,
+             msg.capacity,
+             msg.design_capacity,
+             msg.percentage,
+             msg.power_supply_status,
+             msg.power_supply_health,
+             msg.power_supply_technology,
+             msg.present,
+             cell_voltage,
+             cell_temperature)
+      .o;
+}
+
+// sensor_msgs/Imu
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const sensor_msgs::Imu& msg, const MetadataOffset& metadata) {
+  auto header = encode(fbb, msg.header, 0);
+  // access to orientation msg and get roll, pitch, yaw  Here q0, q1, q2, q3 corresponds to w,x,y,z respectively
+  // float roll  = atan2(2.0 * (q.q3 * q.q2 + q.q0 * q.q1) , 1.0 - 2.0 * (q.q1 * q.q1 + q.q2 * q.q2));
+  // float pitch = asin(2.0 * (q.q2 * q.q0 - q.q3 * q.q1));
+  //yaw = atan2(2.0 * (q.z * q.w + q.x * q.y), -1 + +2 * (q.w * q.w + q.x * q.x)) * -1;
+  float roll = atan2(2*(msg.orientation.z*msg.orientation.y + msg.orientation.w*msg.orientation.x), 1-2*(msg.orientation.x*msg.orientation.x + msg.orientation.y*msg.orientation.y));
+  float pitch = asin(2*(msg.orientation.y*msg.orientation.w - msg.orientation.z*msg.orientation.x));
+  float yaw =(-1)* atan2(2*(msg.orientation.z*msg.orientation.w + msg.orientation.x*msg.orientation.y), -1+2*(msg.orientation.w*msg.orientation.w + msg.orientation.x*msg.orientation.x));
+  
+  return fb::geometry_msgs::CreateVector3(fbb, metadata, roll, pitch, yaw).o;
+
 }
 
 // sensor_msgs/CompressedImage

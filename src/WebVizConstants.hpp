@@ -25,6 +25,8 @@ static const std::string subscriptions_topic = "/subscriptions";
  * @brief (amrl_msgs/Localization2DMsg) Current robot localization
  */
 static const std::string localization_topic = "localization";
+static const std::string battery_topic = "battery";
+static const std::string imu_topic = "orientation";
 
 /**
  * @brief (nav_msgs/Odometry) Current robot odometry
