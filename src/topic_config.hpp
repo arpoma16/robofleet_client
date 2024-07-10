@@ -95,4 +95,23 @@ struct ReceiveRemoteTopic {
     to.assert_set();
   }
 };
+
+
+/**
+ * @brief Config for receiving messages from a remote topic on Robofleet
+ *
+ * This creates a ROS publisher to bridge remote messages to the robot.
+ * @tparam RosType the ROS message class being sent on the topic
+ */
+template <typename RosType>
+struct ReceiveLocalService {
+  BuilderProp<ReceiveLocalService, std::string> from{*this};
+  BuilderProp<ReceiveLocalService, std::string> to{*this};
+
+  void assert_valid() const {
+    from.assert_set();
+    to.assert_set();
+  }
+};
+
 };  // namespace topic_config

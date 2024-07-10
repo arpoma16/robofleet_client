@@ -5,6 +5,7 @@
 #include <amrl_msgs/RobofleetSubscription.h>
 #include <amrl_msgs/VisualizationMsg.h>
 #include <flatbuffers/flatbuffers.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
@@ -18,6 +19,10 @@
 #include <amrl_msgs/ElevatorCommand.h>
 #include <std_msgs/Header.h>
 #include <std_msgs/String.h>
+#include <std_msgs/UInt8.h>
+#include <dji_osdk_ros/ObstacleInfo.h>
+#include <dji_osdk_ros/WaypointV2MissionStatePush.h>
+#include <std_srvs/SetBool.h>
 #include <algorithm>
 #include "encode.hpp"
 
@@ -63,6 +68,14 @@ flatbuffers::uoffset_t encode(
   return fb::std_msgs::CreateStringDirect(fbb, metadata, msg.data.c_str()).o;
 }
 
+// std_msgs/UInt8
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const std_msgs::UInt8& msg, const MetadataOffset& metadata) {
+  return fb::std_msgs::CreateUInt8(fbb, metadata, msg.data).o;
+}
+
+
 // geometry_msgs/Point
 template <>
 flatbuffers::uoffset_t encode(
@@ -105,6 +118,7 @@ flatbuffers::uoffset_t encode(
       .o;
 }
 
+
 // geometry_msgs/PoseWithCovariance
 template <>
 flatbuffers::uoffset_t encode(
@@ -138,6 +152,70 @@ flatbuffers::uoffset_t encode(
     FBB& fbb, const geometry_msgs::Vector3& msg,
     const MetadataOffset& metadata) {
   return fb::geometry_msgs::CreateVector3(fbb, metadata, msg.x, msg.y, msg.z).o;
+}
+// geometry_msgs/Vector3Stamped
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const geometry_msgs::Vector3Stamped& msg,
+    const MetadataOffset& metadata) {
+
+  return fb::geometry_msgs::CreateVector3Stamped(fbb,
+             metadata,encode(fbb,msg.header,0),
+             encode(fbb,msg.vector,0)).o;
+}
+// dji_osdk_ros/ObstacleInfo
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const dji_osdk_ros::ObstacleInfo& msg,
+    const MetadataOffset& metadata) {
+  return fb::dji_osdk_ros::CreateObstacleInfo(
+             fbb,
+             metadata,
+             encode(fbb, msg.header, 0),
+             msg.down,
+             msg.front,
+             msg.right,
+             msg.back,
+             msg.left,
+             msg.up,
+             msg.down_health,
+             msg.front_health,
+             msg.right_health,
+              msg.back_health,
+              msg.left_health,
+              msg.up_health)
+      .o;
+}
+
+// dji_osdk_ros/WaypointV2MissionStatePush
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const dji_osdk_ros::WaypointV2MissionStatePush& msg,
+    const MetadataOffset& metadata) {
+  return fb::dji_osdk_ros::CreateWaypointV2MissionStatePush(
+             fbb,
+             metadata,
+             msg.commonDataVersion,
+             msg.commonDataLen,
+             msg.curWaypointIndex,
+             msg.state,
+             msg.velocity)
+      .o;
+}
+
+// std_srvs/SetBool
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const std_srvs::SetBool& msg,
+    const MetadataOffset& metadata) {
+  return fb::std_srvs::CreateSetBool(
+             fbb,
+             metadata,
+             fb::std_srvs::CreateSetBoolRequest(
+             fbb,
+             msg.request.data).o,
+            fb::std_srvs::CreateSetBoolResponse(fbb,msg.response.success,fbb.CreateString(msg.response.message)).o)
+      .o;
 }
 
 // geometry_msgs/Twist

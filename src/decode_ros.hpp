@@ -24,7 +24,11 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <aerialcore_common/ConfigMission.h>
+
 #include <std_msgs/String.h>
+#include <std_srvs/SetBool.h>
+
 #include "decode.hpp"
 
 
@@ -344,6 +348,36 @@ sensor_msgs::CompressedImage decode(
   dst.format = src->format()->str();
   return dst;
 }
+
+
+template <>
+struct flatbuffers_type_for<aerialcore_common::ConfigMission > {
+  typedef fb::aerialcore_common::ConfigMission type;
+};
+template <>
+aerialcore_common::ConfigMission decode(
+    const fb::aerialcore_common::ConfigMission* const src) {
+  aerialcore_common::ConfigMission dst;
+  dst.request.yawMode = src->request()->yawMode();
+  dst.request.gimbalPitchMode = src->request()->gimbalPitchMode();
+  dst.request.traceMode = src->request()->traceMode();
+  dst.request.finishAction = src->request()->finishAction();
+  dst.request.maxVel = src->request()->maxVel();
+  dst.request.idleVel = src->request()->idleVel();
+  return dst;
+}
+
+template <>
+struct flatbuffers_type_for<std_srvs::SetBool> {
+  typedef fb::std_srvs::SetBool type;
+};
+template <>
+std_srvs::SetBool decode(const fb::std_srvs::SetBool* const src) {
+  std_srvs::SetBool dst;
+  dst.request.data = src->request()->data();
+  return dst;
+}
+
 
 template <>
 struct flatbuffers_type_for<sensor_msgs::PointField> {

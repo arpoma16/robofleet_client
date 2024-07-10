@@ -27,6 +27,15 @@ static const std::string subscriptions_topic = "/subscriptions";
 static const std::string localization_topic = "localization";
 static const std::string battery_topic = "battery";
 static const std::string imu_topic = "orientation";
+static const std::string gimbal_topic = "gimbal";
+static const std::string speed_topic = "speed";
+static const std::string Obstacle_topic = "Obstacle_topic";
+static const std::string flight_status_topic = "flight_status";
+static const std::string mission_state_topic = "mission_state";
+
+
+
+
 
 /**
  * @brief (nav_msgs/Odometry) Current robot odometry

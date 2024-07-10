@@ -13,6 +13,7 @@
 #include "decode_ros.hpp"
 #include "encode_ros.hpp"
 #include "topic_config.hpp"
+#include <std_srvs/SetBool.h>
 
 class RosClientNode : public QObject {
   Q_OBJECT
@@ -29,12 +30,19 @@ class RosClientNode : public QObject {
   using TopicString = std::string;
   using MsgTypeString = std::string;
   std::vector<TopicString> pub_remote_topics;
+  std::vector<TopicString> call_local_services;
   std::unordered_map<TopicString, ros::Subscriber> subs;
   std::unordered_map<TopicString, ros::Publisher> pubs;
+  std::unordered_map<TopicString, ros::ServiceClient> srvClients;
+
   std::unordered_map<TopicString, TopicParams> topic_params;
   std::unordered_map<
       MsgTypeString, std::function<void(const QByteArray&, const TopicString&)>>
       pub_fns;
+  std::unordered_map<
+      MsgTypeString, std::function<void(const QByteArray&, const TopicString&)>>
+      srvClient_fns;
+  
 
   const int verbosity_;
 
@@ -72,6 +80,29 @@ class RosClientNode : public QObject {
   void publish_ros_msg(
       const T& msg, const std::string& msg_type, const std::string& to_topic) {
     pubs[msg_type].publish(msg);
+  }
+
+  template <typename T>
+  void call_ros_srv(
+       T& msg, const std::string& from_topic, const std::string& to_topic,const std::string& msg_type) {
+        std::cerr << "Service client avaliable" << (int)(srvClients[from_topic].exists()) << std::endl;
+        // ros::service::call(to_topic, msg))
+      if(srvClients[from_topic].exists()){
+        if(srvClients[from_topic].call(msg)){
+          std::cerr << "Service client response OK " << to_topic << std::endl;
+          //std::cerr << "Service client response OK " << (int)(msg.response.data) << std::endl;
+          TopicParams params;
+          params.no_drop = true;
+          params.priority = 1.0;
+          params.rate_limit = 1.0;
+          encode_ros_msg<T>(msg, msg_type, from_topic, to_topic, params);
+
+        }else{
+          std::cerr << "Service client response FAIL " << to_topic << std::endl;
+        }
+      }else{
+        std::cerr << "Service client not exist for topic: " << to_topic << std::endl;
+      }    
   }
   /**
    * @brief Set up pub/sub for a particular message type and topic.
@@ -164,6 +195,61 @@ class RosClientNode : public QObject {
     pub_remote_topics.push_back(full_from_topic);
   }
 
+    /**
+   * @brief Set up remote publishing for a particular message type and topic
+   * sent from the server.
+   *
+   * Sets up the client to publish to `to_topic` whenever it
+   * recieves a message of type `from_topic` from the remote server.
+   * @tparam T the ROS message type
+   * @param from_topic the remote topic to expect
+   * @param to_topic the local topic to publish to
+   */
+  template <typename T>
+  void register_local_srv_type(
+      const std::string& from_topic, const std::string& to_topic) {
+    // apply remapping to encode full topic name
+    const std::string full_from_topic = ros::names::resolve(from_topic);
+    const std::string full_to_topic = ros::names::resolve(to_topic);
+    const std::string& msg_type = ros::service_traits::DataType<T>().value();
+
+    //if (subs.count(full_to_topic) > 0) {
+    //  std::cerr << "Publishing to a topic " << full_to_topic
+    //            << " that is registered as a subscription. "
+    //            << "Ensure this is intentional, as it can cause infinite "
+    //               "feedback loops."
+    //            << std::endl;
+    //}
+
+    if (verbosity_ > 0) {
+      printf("Preparing service call: %s [%s]->%s\n", full_from_topic.c_str(), msg_type.c_str(), full_to_topic.c_str());
+    }
+
+    // create function that will decode and publish a T message to any topic
+    if (srvClient_fns.count(msg_type) == 0) {
+      srvClient_fns[msg_type] = [this, full_to_topic,msg_type](
+                              const QByteArray& data,
+                              const std::string& from_topic) {
+        const auto* root =
+            flatbuffers::GetRoot<typename flatbuffers_type_for<T>::type>(
+                data.data());
+        T msg = decode<T>(root);
+          std::cerr << "Service client full topic  " << full_to_topic << std::endl;
+          std::cerr << "Service client msg_type  " << from_topic << std::endl;
+          std::cerr << "Service client msg_type  " << msg_type << std::endl;
+
+        call_ros_srv<T>(msg, from_topic, full_to_topic,msg_type);
+      };
+    }
+
+    // Set up publishers for these remote messages
+    if (srvClients.count(full_from_topic) == 0) {
+      srvClients[full_from_topic] = n.serviceClient<T>(full_to_topic);
+    }
+    call_local_services.push_back(full_from_topic);
+
+  }
+
  Q_SIGNALS:
   void ros_message_encoded(
       const QString& topic, const QByteArray& data, double priority, double rate_limit,
@@ -183,6 +269,19 @@ class RosClientNode : public QObject {
     const std::string& msg_type = msg->__metadata()->type()->str();
     const std::string& topic = msg->__metadata()->topic()->str();
 
+    if (verbosity_ > 1) {
+      std::cout << "Received message of type " << msg_type << " on topic " << topic << std::endl;
+    }
+
+    if(srvClient_fns.count(msg_type) == 0){
+      std::cerr << "Service client not exist fOR " << topic << std::endl;
+    }
+    if(srvClient_fns.count(msg_type) > 0){
+      std::cerr << "Service client CALL " << topic << std::endl;
+      srvClient_fns[msg_type](data, topic);
+      return;
+    }
+
     // try to publish
     if (pub_fns.count(msg_type) == 0) {
       // if you get this unexpectedly, ensure that:
@@ -196,9 +295,7 @@ class RosClientNode : public QObject {
       return;
     }
 
-    if (verbosity_ > 1) {
-      std::cout << "Received message of type " << msg_type << " on topic " << topic << std::endl;
-    }
+
 
     pub_fns[msg_type](data, topic);
   }
@@ -249,6 +346,12 @@ class RosClientNode : public QObject {
   void configure(const topic_config::ReceiveRemoteTopic<T>& config) {
     config.assert_valid();
     register_remote_msg_type<T>(config.from, config.to);
+  }
+
+  template <typename T>
+  void configure(const topic_config::ReceiveLocalService<T>& config) {
+    config.assert_valid();
+    register_local_srv_type<T>(config.from, config.to);
   }
 
   RosClientNode(int verbosity) : verbosity_(verbosity)  {

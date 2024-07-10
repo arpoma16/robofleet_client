@@ -17,6 +17,7 @@ add_executable(test_client test/main.cpp)
 add_subdirectory(src)
 include_directories(include)
 
+
 # find CMake packages for installed ROS packages
 # this can be done for any catkin-based package
 # https://github.com/gerkey/ros1_external_use/blob/master/ros1_msgs
@@ -27,6 +28,14 @@ list(APPEND Libs ${roscpp_LIBRARIES})
 find_package(std_msgs REQUIRED)
 include_directories(${std_msgs_INCLUDE_DIRS})
 list(APPEND Libs ${std_msgs_LIBRARIES})
+
+find_package(std_srvs REQUIRED)
+include_directories(${std_srvs_INCLUDE_DIRS})
+list(APPEND Libs ${std_srvs_LIBRARIES})
+
+include_directories(/home/user/catkin_ws/devel/include)
+find_library(DJI_OSDK_ROS_LIB dji_osdk_ros PATHS /home/user/catkin_ws/devel/lib)
+list(APPEND Libs ${DJI_OSDK_ROS_LIB})
 
 # custom target that builds amrl_msgs
 add_custom_target(amrl_msgs
