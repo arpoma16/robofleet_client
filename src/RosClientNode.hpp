@@ -95,7 +95,7 @@ class RosClientNode : public QObject {
           params.no_drop = true;
           params.priority = 1.0;
           params.rate_limit = 1.0;
-          encode_ros_msg<T>(msg, msg_type, from_topic, to_topic, params);
+          encode_ros_msg<T>(msg, msg_type,to_topic,from_topic, params);
 
         }else{
           std::cerr << "Service client response FAIL " << to_topic << std::endl;
@@ -234,8 +234,8 @@ class RosClientNode : public QObject {
             flatbuffers::GetRoot<typename flatbuffers_type_for<T>::type>(
                 data.data());
         T msg = decode<T>(root);
-          std::cerr << "Service client full topic  " << full_to_topic << std::endl;
-          std::cerr << "Service client msg_type  " << from_topic << std::endl;
+          std::cerr << "Service client full to topic  " << full_to_topic << std::endl;
+          std::cerr << "Service client from topic  " << from_topic << std::endl;
           std::cerr << "Service client msg_type  " << msg_type << std::endl;
 
         call_ros_srv<T>(msg, from_topic, full_to_topic,msg_type);
