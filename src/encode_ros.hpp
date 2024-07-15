@@ -203,6 +203,37 @@ flatbuffers::uoffset_t encode(
       .o;
 }
 
+// std_srvs/ConfigMission
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const aerialcore_common::ConfigMission& msg,
+    const MetadataOffset& metadata) {
+  return fb::aerialcore_common::CreateConfigMission(
+             fbb,
+             metadata,
+             fb::aerialcore_common::CreateConfigMissionRequest(
+             fbb,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0).o,
+            fb::aerialcore_common::CreateConfigMissionResponse(fbb,
+            msg.response.success).o)
+      .o;
+}
+
 // std_srvs/SetBool
 template <>
 flatbuffers::uoffset_t encode(
@@ -214,7 +245,9 @@ flatbuffers::uoffset_t encode(
              fb::std_srvs::CreateSetBoolRequest(
              fbb,
              msg.request.data).o,
-            fb::std_srvs::CreateSetBoolResponse(fbb,msg.response.success,fbb.CreateString(msg.response.message)).o)
+            fb::std_srvs::CreateSetBoolResponse(fbb,
+            msg.response.success,
+            fbb.CreateString(msg.response.message)).o)
       .o;
 }
 

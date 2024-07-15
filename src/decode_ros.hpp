@@ -27,10 +27,22 @@
 #include <aerialcore_common/ConfigMission.h>
 
 #include <std_msgs/String.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <std_srvs/SetBool.h>
 
 #include "decode.hpp"
 
+// *** helper functions ***
+//template <typename T, typename Vsrc>
+//Float64MultiArray decode_MultiArray(const Vsrc* const src_vector_ptr) {
+//  auto my_msg = Float64MultiArray()  
+//  float data[ src_vector_ptr->size() ];
+//  for (int i = 0; i < src_vector_ptr->size(); i++) {
+//    data[i] = src_vector_ptr->Get(i);
+//  }
+//  my_msg.data = data;
+//  return my_msg;
+//}
 
 // *** specializations below ***
 
@@ -357,6 +369,8 @@ struct flatbuffers_type_for<aerialcore_common::ConfigMission > {
 template <>
 aerialcore_common::ConfigMission decode(
     const fb::aerialcore_common::ConfigMission* const src) {
+  
+  
   aerialcore_common::ConfigMission dst;
   dst.request.yawMode = src->request()->yawMode();
   dst.request.gimbalPitchMode = src->request()->gimbalPitchMode();
@@ -364,6 +378,22 @@ aerialcore_common::ConfigMission decode(
   dst.request.finishAction = src->request()->finishAction();
   dst.request.maxVel = src->request()->maxVel();
   dst.request.idleVel = src->request()->idleVel();
+  decode_vector<sensor_msgs::NavSatFix>(src->request()->waypoint(), dst.request.waypoint);
+  for (int i = 0; i < src->request()->yaw()->size(); i++) {
+    dst.request.yaw.data.push_back( src->request()->yaw()->Get(i));
+  }
+  for (int i = 0; i < src->request()->gimbalPitch()->size(); i++) {
+    dst.request.gimbalPitch.data.push_back( src->request()->gimbalPitch()->Get(i));
+  }
+  for (int i = 0; i < src->request()->speed()->size(); i++) {
+    dst.request.speed.data.push_back( src->request()->speed()->Get(i));
+  }
+  for (int i = 0; i < src->request()->commandList()->size(); i++) {
+    dst.request.commandList.data.push_back( src->request()->commandList()->Get(i));
+  }
+  for (int i = 0; i < src->request()->commandParameter()->size(); i++) {
+    dst.request.commandParameter.data.push_back( src->request()->commandParameter()->Get(i));
+  }
   return dst;
 }
 
