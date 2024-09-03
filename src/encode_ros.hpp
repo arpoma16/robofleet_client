@@ -239,14 +239,16 @@ template <>
 flatbuffers::uoffset_t encode(
     FBB& fbb, const std_srvs::SetBool& msg,
     const MetadataOffset& metadata) {
+  std::cerr << "encode setbool  data " << (bool)(msg.request.data) << std::endl;
+
   return fb::std_srvs::CreateSetBool(
              fbb,
              metadata,
              fb::std_srvs::CreateSetBoolRequest(
              fbb,
-             msg.request.data).o,
+             (bool)(msg.request.data)).o,
             fb::std_srvs::CreateSetBoolResponse(fbb,
-            msg.response.success,
+            (bool)msg.response.success,
             fbb.CreateString(msg.response.message)).o)
       .o;
 }

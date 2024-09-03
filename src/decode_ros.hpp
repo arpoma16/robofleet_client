@@ -404,7 +404,10 @@ struct flatbuffers_type_for<std_srvs::SetBool> {
 template <>
 std_srvs::SetBool decode(const fb::std_srvs::SetBool* const src) {
   std_srvs::SetBool dst;
-  dst.request.data = src->request()->data();
+  std::cerr << "Decode set bool " << (bool)(src->request()->data()) << std::endl;
+
+
+  dst.request.data = (bool)(src->request()->data());
   return dst;
 }
 
