@@ -6,6 +6,8 @@
 #include <amrl_msgs/VisualizationMsg.h>
 #include <flatbuffers/flatbuffers.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
@@ -20,6 +22,8 @@
 #include <std_msgs/Header.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float64.h>
+
 #include <dji_osdk_ros/ObstacleInfo.h>
 #include <dji_osdk_ros/WaypointV2MissionStatePush.h>
 #include <std_srvs/SetBool.h>
@@ -76,6 +80,12 @@ flatbuffers::uoffset_t encode(
 }
 
 
+// std_msgs/Float64
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const std_msgs::Float64& msg, const MetadataOffset& metadata) {
+  return fb::std_msgs::CreateFloat64(fbb, metadata, msg.data).o;
+}
 // geometry_msgs/Point
 template <>
 flatbuffers::uoffset_t encode(
@@ -441,6 +451,31 @@ flatbuffers::uoffset_t encode(
              intensities)
       .o;
 }
+// geometry_msgs/Twist
+<template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const geometry_msgs::Twist& msg,
+    const MetadataOffset& metadata) {
+  return fb::geometry_msgs::CreateTwist(
+             fbb,
+             metadata,
+             encode(fbb, msg.linear, 0),
+             encode(fbb, msg.angular, 0))
+      .o;
+    }
+
+// geometry_msgs/TwistStamped
+<template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const geometry_msgs::TwistStamped& msg,
+    const MetadataOffset& metadata) {
+  return fb::geometry_msgs::CreateTwistStamped(
+             fbb,
+             metadata,
+             encode(fbb, msg.header, 0),
+             encode(fbb, msg.twist, 0))
+      .o;
+    }
 
 // sensor_msgs/NavSatFix
 template <>
