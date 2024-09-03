@@ -13,6 +13,8 @@
 #include <amrl_msgs/ElevatorStatus.h>
 #include <amrl_msgs/ErrorReport.h>
 #include <flatbuffers/flatbuffers.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -328,6 +330,35 @@ sensor_msgs::LaserScan decode(const fb::sensor_msgs::LaserScan* const src) {
   dst.time_increment = src->time_increment();
   return dst;
 }
+
+template <>
+struct flatbuffers_type_for<geometry_msgs::Twist> {
+  typedef fb::geometry_msgs::Twist type;
+};
+template <>
+geometry_msgs::Twist decode(const fb::geometry_msgs::Twist* const src) {
+  geometry_msgs::Twist dst;
+  dst.linear.x = src->linear()->x();
+  dst.linear.y = src->linear()->y();
+  dst.linear.z = src->linear()->z();
+  dst.angular.x = src->angular()->x();
+  dst.angular.y = src->angular()->y();
+  dst.angular.z = src->angular()->z();
+  return dst;
+}
+
+template <>
+struct flatbuffers_type_for<geometry_msgs::TwistStamped> {
+  typedef fb::geometry_msgs::TwistStamped type;
+};
+template <>
+geometry_msgs::TwistStamped decode(const fb::geometry_msgs::TwistStamped* const src) {
+  geometry_msgs::TwistStamped dst;
+  dst.header = decode<std_msgs::Header>(src->header());
+  dst.twist = decode<geometry_msgs::Twist>(src->twist());
+  return dst;
+}
+
 
 template <>
 struct flatbuffers_type_for<sensor_msgs::NavSatFix> {
