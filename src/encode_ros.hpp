@@ -275,6 +275,20 @@ flatbuffers::uoffset_t encode(
       .o;
 }
 
+// geometry_msgs/TwistStamped
+template <>
+flatbuffers::uoffset_t encode(
+    FBB& fbb, const geometry_msgs::TwistStamped& msg,
+    const MetadataOffset& metadata) {
+  return fb::geometry_msgs::CreateTwistStamped(
+             fbb,
+             metadata,
+             encode(fbb, msg.header, 0),
+             encode(fbb, msg.twist, 0))
+      .o;
+    }
+
+
 // geometry_msgs/TwistWithCovariance
 template <>
 flatbuffers::uoffset_t encode(
@@ -451,31 +465,8 @@ flatbuffers::uoffset_t encode(
              intensities)
       .o;
 }
-// geometry_msgs/Twist
-<template <>
-flatbuffers::uoffset_t encode(
-    FBB& fbb, const geometry_msgs::Twist& msg,
-    const MetadataOffset& metadata) {
-  return fb::geometry_msgs::CreateTwist(
-             fbb,
-             metadata,
-             encode(fbb, msg.linear, 0),
-             encode(fbb, msg.angular, 0))
-      .o;
-    }
 
-// geometry_msgs/TwistStamped
-<template <>
-flatbuffers::uoffset_t encode(
-    FBB& fbb, const geometry_msgs::TwistStamped& msg,
-    const MetadataOffset& metadata) {
-  return fb::geometry_msgs::CreateTwistStamped(
-             fbb,
-             metadata,
-             encode(fbb, msg.header, 0),
-             encode(fbb, msg.twist, 0))
-      .o;
-    }
+
 
 // sensor_msgs/NavSatFix
 template <>
