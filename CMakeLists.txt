@@ -33,10 +33,6 @@ find_package(std_srvs REQUIRED)
 include_directories(${std_srvs_INCLUDE_DIRS})
 list(APPEND Libs ${std_srvs_LIBRARIES})
 
-include_directories(/home/user/catkin_ws/devel/include)
-find_library(DJI_OSDK_ROS_LIB dji_osdk_ros PATHS /home/user/catkin_ws/devel/lib)
-list(APPEND Libs ${DJI_OSDK_ROS_LIB})
-
 # custom target that builds amrl_msgs
 add_custom_target(amrl_msgs
   COMMAND ${CMAKE_COMMAND} -E env "ROS_PACKAGE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/amrl_msgs:$ENV{ROS_PACKAGE_PATH}" make

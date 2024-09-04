@@ -26,7 +26,6 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <aerialcore_common/ConfigMission.h>
 
 #include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
@@ -393,40 +392,6 @@ sensor_msgs::CompressedImage decode(
 }
 
 
-template <>
-struct flatbuffers_type_for<aerialcore_common::ConfigMission > {
-  typedef fb::aerialcore_common::ConfigMission type;
-};
-template <>
-aerialcore_common::ConfigMission decode(
-    const fb::aerialcore_common::ConfigMission* const src) {
-  
-  
-  aerialcore_common::ConfigMission dst;
-  dst.request.yawMode = src->request()->yawMode();
-  dst.request.gimbalPitchMode = src->request()->gimbalPitchMode();
-  dst.request.traceMode = src->request()->traceMode();
-  dst.request.finishAction = src->request()->finishAction();
-  dst.request.maxVel = src->request()->maxVel();
-  dst.request.idleVel = src->request()->idleVel();
-  decode_vector<sensor_msgs::NavSatFix>(src->request()->waypoint(), dst.request.waypoint);
-  for (int i = 0; i < src->request()->yaw()->size(); i++) {
-    dst.request.yaw.data.push_back( src->request()->yaw()->Get(i));
-  }
-  for (int i = 0; i < src->request()->gimbalPitch()->size(); i++) {
-    dst.request.gimbalPitch.data.push_back( src->request()->gimbalPitch()->Get(i));
-  }
-  for (int i = 0; i < src->request()->speed()->size(); i++) {
-    dst.request.speed.data.push_back( src->request()->speed()->Get(i));
-  }
-  for (int i = 0; i < src->request()->commandList()->size(); i++) {
-    dst.request.commandList.data.push_back( src->request()->commandList()->Get(i));
-  }
-  for (int i = 0; i < src->request()->commandParameter()->size(); i++) {
-    dst.request.commandParameter.data.push_back( src->request()->commandParameter()->Get(i));
-  }
-  return dst;
-}
 
 template <>
 struct flatbuffers_type_for<std_srvs::SetBool> {

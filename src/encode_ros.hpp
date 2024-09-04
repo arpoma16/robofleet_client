@@ -24,8 +24,6 @@
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Float64.h>
 
-#include <dji_osdk_ros/ObstacleInfo.h>
-#include <dji_osdk_ros/WaypointV2MissionStatePush.h>
 #include <std_srvs/SetBool.h>
 #include <algorithm>
 #include "encode.hpp"
@@ -173,76 +171,8 @@ flatbuffers::uoffset_t encode(
              metadata,encode(fbb,msg.header,0),
              encode(fbb,msg.vector,0)).o;
 }
-// dji_osdk_ros/ObstacleInfo
-template <>
-flatbuffers::uoffset_t encode(
-    FBB& fbb, const dji_osdk_ros::ObstacleInfo& msg,
-    const MetadataOffset& metadata) {
-  return fb::dji_osdk_ros::CreateObstacleInfo(
-             fbb,
-             metadata,
-             encode(fbb, msg.header, 0),
-             msg.down,
-             msg.front,
-             msg.right,
-             msg.back,
-             msg.left,
-             msg.up,
-             msg.down_health,
-             msg.front_health,
-             msg.right_health,
-              msg.back_health,
-              msg.left_health,
-              msg.up_health)
-      .o;
-}
 
-// dji_osdk_ros/WaypointV2MissionStatePush
-template <>
-flatbuffers::uoffset_t encode(
-    FBB& fbb, const dji_osdk_ros::WaypointV2MissionStatePush& msg,
-    const MetadataOffset& metadata) {
-  return fb::dji_osdk_ros::CreateWaypointV2MissionStatePush(
-             fbb,
-             metadata,
-             msg.commonDataVersion,
-             msg.commonDataLen,
-             msg.curWaypointIndex,
-             msg.state,
-             msg.velocity)
-      .o;
-}
 
-// std_srvs/ConfigMission
-template <>
-flatbuffers::uoffset_t encode(
-    FBB& fbb, const aerialcore_common::ConfigMission& msg,
-    const MetadataOffset& metadata) {
-  return fb::aerialcore_common::CreateConfigMission(
-             fbb,
-             metadata,
-             fb::aerialcore_common::CreateConfigMissionRequest(
-             fbb,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0).o,
-            fb::aerialcore_common::CreateConfigMissionResponse(fbb,
-            msg.response.success).o)
-      .o;
-}
 
 // std_srvs/SetBool
 template <>
